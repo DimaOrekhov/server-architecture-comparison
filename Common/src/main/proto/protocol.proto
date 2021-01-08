@@ -2,3 +2,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 
 package ru.itmo.java.architectures.protocol;
+
+message IntArrayMessage {
+  repeated int32 elements = 1;
+}
