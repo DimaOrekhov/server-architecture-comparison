@@ -15,29 +15,38 @@ class Client(
     private val requestDelay: Long
 ) : Runnable, Closeable {
 
-    private val processingTimeListMs = mutableListOf<Long>()
+    @Volatile
+    var isDone = false
+        private set
+    var runningTime: Long = 0
+        private set
+    @Volatile
     private lateinit var clientThread: Thread
 
-    override fun run() =
+    override fun run() {
+        val startTime = System.currentTimeMillis()
         Socket(address, port).use { socket ->
             clientThread = Thread.currentThread()
             val inputStream = socket.getInputStream()
             val outputStream = socket.getOutputStream()
 
+            // Do I need to check interruption?
             for (i in 1..nRequests) {
                 val elements = IntArray(nElements) { Random.nextInt() }
                 val request = IntArrayMessage.newBuilder().addAllElements(elements.toList()).build()
 
-                val startTime = System.currentTimeMillis()
                 request.writeWithSizeTo(outputStream)
                 outputStream.flush()
 
                 readWithSizeFrom(inputStream)
-                processingTimeListMs.add(System.currentTimeMillis() - startTime)
 
                 Thread.sleep(requestDelay)
             }
         }
+        runningTime = System.currentTimeMillis() - startTime
+        isDone = true
+    }
 
+    // TODO: do I need this method at all?
     override fun close() = clientThread.interrupt()
 }
