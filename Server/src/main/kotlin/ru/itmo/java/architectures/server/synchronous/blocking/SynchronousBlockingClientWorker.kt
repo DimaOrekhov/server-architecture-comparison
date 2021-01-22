@@ -1,4 +1,4 @@
-package ru.itmo.java.architectures.server.synchronous
+package ru.itmo.java.architectures.server.synchronous.blocking
 
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo

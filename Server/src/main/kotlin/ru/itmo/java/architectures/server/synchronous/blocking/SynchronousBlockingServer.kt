@@ -1,4 +1,4 @@
-package ru.itmo.java.architectures.server.synchronous
+package ru.itmo.java.architectures.server.synchronous.blocking
 
 import ru.itmo.java.architectures.common.Constants
 import ru.itmo.java.architectures.server.domain.TimedServer
@@ -32,6 +32,7 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
         acceptPool.shutdown()
         clients.forEach { it.close() }
         globalThreadPool.shutdown()
+        // TODO: save time here
     }
 
     private fun createClient(socket: Socket) {
