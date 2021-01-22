@@ -70,16 +70,11 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
     private val sendResponseHandler = object : CompletionHandler<Int, Array<ByteBuffer>> {
         override fun completed(result: Int?, attachment: Array<ByteBuffer>?) {
             val responseBuffers = attachment!!
-            val currentBuffer = when {
-                responseBuffers[0].hasRemaining() -> responseBuffers[0]
-                responseBuffers[1].hasRemaining() -> responseBuffers[1]
-                else -> {
-                    close()
-                    return
-                }
+            when {
+                responseBuffers[0].hasRemaining() -> channel.write(responseBuffers[0], responseBuffers, this)
+                responseBuffers[1].hasRemaining() -> channel.write(responseBuffers[1], responseBuffers, this)
+                else -> readHeader()
             }
-
-            channel.write(currentBuffer, responseBuffers, this)
         }
 
         override fun failed(exc: Throwable?, attachment: Array<ByteBuffer>?) {
@@ -87,7 +82,9 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         }
     }
 
-    fun start() {
+    fun start() = readHeader()
+
+    private fun readHeader() {
         val headerBuffer = ByteBuffer.allocate(4) // TODO: Move header size somewhere to Commons mb
         channel.read(headerBuffer, headerBuffer, headerHandler)
     }

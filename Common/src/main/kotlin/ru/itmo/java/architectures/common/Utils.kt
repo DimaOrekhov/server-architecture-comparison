@@ -36,4 +36,10 @@ object Utils {
 
     @kotlin.jvm.JvmName("meanOfInt")
     fun Collection<Int>.mean() = sum() / size.toDouble()
+
+    fun whileNotInterrupted(body: () -> Unit) {
+        while (!Thread.interrupted()) {
+            body()
+        }
+    }
 }
