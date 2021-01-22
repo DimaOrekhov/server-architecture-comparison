@@ -1,7 +1,9 @@
 package ru.itmo.java.architectures.server.domain
 
 interface TimedServer: Server {
-    fun getJobExecutionTimesMs(): List<Long>
+    val meanRequestResponseTimeMs: Long
 
-    fun getRequestResponseTimesMs(): List<Long>
+    val meanTaskTimeMs: Long
+
+    fun resetMeasurements()
 }

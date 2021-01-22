@@ -5,5 +5,7 @@ object Constants {
     const val SERVER_BACKLOG = 50
     const val SERVER_PORT = 3131
 
+    const val SERVER_POOL_SIZE = 8
+
     const val HEADER_SIZE = 4
 }

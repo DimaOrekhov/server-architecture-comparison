@@ -13,6 +13,15 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
 
     private val channelGroup = AsynchronousChannelGroup.withFixedThreadPool(poolSize) { runnable -> Thread(runnable) }
 
+    override val meanRequestResponseTimeMs: Long
+        get() = TODO("Not yet implemented")
+    override val meanTaskTimeMs: Long
+        get() = TODO("Not yet implemented")
+
+    override fun resetMeasurements() {
+        TODO("Not yet implemented")
+    }
+
     override fun start() = AsynchronousServerSocketChannel.open(channelGroup)
             .bind(InetSocketAddress(Constants.SERVER_ADDRESS, Constants.SERVER_PORT))
             .use { serverSocket -> acceptLoop(serverSocket) }
@@ -29,14 +38,6 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
                 TODO("Not yet implemented")
             }
         })
-    }
-
-    override fun getJobExecutionTimesMs(): List<Long> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getRequestResponseTimesMs(): List<Long> {
-        TODO("Not yet implemented")
     }
 
     override fun close() {

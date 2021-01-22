@@ -4,8 +4,10 @@ import ru.itmo.java.architectures.client.ClientPool
 import ru.itmo.java.architectures.common.Constants
 import ru.itmo.java.architectures.experiment.schedulers.ConstantScheduler
 import ru.itmo.java.architectures.experiment.schedulers.Scheduler
-import ru.itmo.java.architectures.server.synchronous.SynchronousBlockingServer
-import java.lang.IllegalArgumentException
+import ru.itmo.java.architectures.server.asynchronous.AsynchronousServer
+import ru.itmo.java.architectures.server.domain.TimedServer
+import ru.itmo.java.architectures.server.synchronous.blocking.SynchronousBlockingServer
+import ru.itmo.java.architectures.server.synchronous.nonblocking.NonBlockingServer
 
 class Experiment(private val config: ExperimentConfig) {
 
@@ -16,7 +18,14 @@ class Experiment(private val config: ExperimentConfig) {
                 listOf(nRequestsScheduler, nClientsScheduler, nElementsScheduler, requestDelayMsScheduler)
     }
 
+    private val server: TimedServer = when (config.architectureType) {
+        ServerArchitectureType.SYNCHRONOUS_BLOCKING -> SynchronousBlockingServer(Constants.SERVER_POOL_SIZE)
+        ServerArchitectureType.ASYNCHRONOUS -> AsynchronousServer(Constants.SERVER_POOL_SIZE)
+        ServerArchitectureType.NONBLOCKING -> NonBlockingServer(Constants.SERVER_POOL_SIZE)
+    }
+
     fun run() {
+        server.start()
         validateConfig()
         config.iterateOver()
     }
@@ -53,12 +62,7 @@ class Experiment(private val config: ExperimentConfig) {
         }
     }
 
-    private fun step(nRequests: Int, nClients: Int, nElements: Int, requestDelayMs: Long) {
-        val server = when (config.architectureType) {
-            ServerArchitectureType.SYNCHRONOUS_BLOCKING -> SynchronousBlockingServer(nClients) // TODO: remove this parameter (pool size) at all
-            ServerArchitectureType.ASYNCHRONOUS -> null
-            ServerArchitectureType.NONBLOCKING -> null
-        }
+    private fun step(nRequests: Int, nClients: Int, nElements: Int, requestDelayMs: Long): ExperimentStepResult {
         val clientPool = ClientPool(
                 address = Constants.SERVER_ADDRESS,
                 port = Constants.SERVER_PORT,
@@ -67,7 +71,17 @@ class Experiment(private val config: ExperimentConfig) {
                 nElements = nElements,
                 requestDelay = requestDelayMs
         )
-        // TODO: save results
+        clientPool.run()
+
+        val meanClientSideRequestResponseTimeMs = clientPool.awaitTerminationAndGetMeanClientTime()
+
+        val meanServerSideTaskTimeMs = server.meanTaskTimeMs
+        val meanServerSideRequestResponseTimeMs = server.meanRequestResponseTimeMs
+        server.resetMeasurements()
+
+        return ExperimentStepResult(meanServerSideRequestResponseTimeMs = meanServerSideRequestResponseTimeMs.toDouble(),
+                meanServerSideTaskTimeMs = meanServerSideTaskTimeMs.toDouble(),
+                meanClientSideRequestResponseTimeMs = meanClientSideRequestResponseTimeMs.toDouble())
     }
 
 }

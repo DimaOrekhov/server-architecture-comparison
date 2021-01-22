@@ -36,6 +36,15 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
 
     private val clients = Collections.newSetFromMap(ConcurrentHashMap<NonBlockingClientProcessor, Boolean>())
 
+    override val meanRequestResponseTimeMs: Long
+        get() = TODO("Not yet implemented")
+    override val meanTaskTimeMs: Long
+        get() = TODO("Not yet implemented")
+
+    override fun resetMeasurements() {
+        TODO("Not yet implemented")
+    }
+
     override fun start() {
         acceptPool.submit {
             ServerSocketChannel.open()
@@ -122,14 +131,6 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
                 client.channelState = ChannelState.REGISTERED
             }
         }
-    }
-
-    override fun getJobExecutionTimesMs(): List<Long> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getRequestResponseTimesMs(): List<Long> {
-        TODO("Not yet implemented")
     }
 
     override fun close() {
