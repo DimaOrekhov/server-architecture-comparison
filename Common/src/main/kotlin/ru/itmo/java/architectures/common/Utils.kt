@@ -22,6 +22,15 @@ object Utils {
         outputStream.write(bytes)
     }
 
+    fun IntArrayMessage.toBuffersArray(): Array<ByteBuffer> {
+        val bytes = toByteArray()
+        val size = bytes.size
+        val headerBuffer = ByteBuffer.allocate(4)
+        headerBuffer.putInt(size)
+        val bodyBuffer = ByteBuffer.wrap(bytes)
+        return arrayOf(headerBuffer, bodyBuffer)
+    }
+
     @kotlin.jvm.JvmName("meanOfLong")
     fun Collection<Long>.mean() = sum() / size.toDouble()
 
