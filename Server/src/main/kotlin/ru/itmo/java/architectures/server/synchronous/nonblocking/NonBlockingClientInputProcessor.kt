@@ -6,9 +6,10 @@ import ru.itmo.java.architectures.server.domain.SortCallable
 import ru.itmo.java.architectures.server.tasks.Utils.thenApply
 import ru.itmo.java.architectures.server.tasks.asTimed
 import java.nio.ByteBuffer
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 
-class NonBlockingClientWorker(private val taskPool: ExecutorService) {
+class NonBlockingClientInputProcessor(private val taskPool: ExecutorService, private val responseQueue: ConcurrentLinkedQueue<ByteBuffer>) {
     private val headBuffer: ByteBuffer = ByteBuffer.allocate(Constants.HEADER_SIZE)
     private lateinit var bodyBuffer: ByteBuffer
 
@@ -46,7 +47,7 @@ class NonBlockingClientWorker(private val taskPool: ExecutorService) {
                 bodyBuffer.flip()
                 val request = IntArrayMessage.parseFrom(bodyBuffer)
                 taskPool.submit(SortCallable<Int>(request.elementsList.toTypedArray())
-                        .thenApply { }
+                        .thenApply { } // Put into queue and wakeup
                         .asTimed()
                         .thenApply { })
 
