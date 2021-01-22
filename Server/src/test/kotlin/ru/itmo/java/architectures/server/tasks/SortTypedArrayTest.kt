@@ -5,7 +5,7 @@ import org.junit.Test
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-abstract class SortTest {
+abstract class SortTypedArrayTest {
 
     companion object {
         private const val N_STRESS_TEST_STEPS = 100
