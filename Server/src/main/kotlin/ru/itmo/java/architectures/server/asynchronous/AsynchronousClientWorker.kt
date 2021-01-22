@@ -1,5 +1,6 @@
 package ru.itmo.java.architectures.server.asynchronous
 
+import ru.itmo.java.architectures.common.Constants
 import ru.itmo.java.architectures.common.Utils.toBuffersArray
 import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
@@ -85,7 +86,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
     fun start() = readHeader()
 
     private fun readHeader() {
-        val headerBuffer = ByteBuffer.allocate(4) // TODO: Move header size somewhere to Commons mb
+        val headerBuffer = ByteBuffer.allocate(Constants.HEADER_SIZE)
         channel.read(headerBuffer, headerBuffer, headerHandler)
     }
 

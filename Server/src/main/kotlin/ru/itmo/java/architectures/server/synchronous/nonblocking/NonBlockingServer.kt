@@ -58,12 +58,9 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
             }
 
             val client = selectionKey.attachment() as NonBlockingClientWorker
-            if (!client.isAvailableForRead.compareAndSet(true, true)) {
-                return@processAndRemoveEach
-            }
-
-            val clientBuffer = client.currentBuffer ?: return@processAndRemoveEach
             val channel = selectionKey.channel() as SocketChannel
+            val clientBuffer = client.currentBuffer
+
             channel.read(clientBuffer)
             client.maybeSubmitTask()
         }
