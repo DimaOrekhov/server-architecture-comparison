@@ -27,9 +27,9 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
     private val taskTimeListMs = mutableListOf<Long>()
     private val requestResponseTimeListMs = mutableListOf<Long>()
 
-    val meanTaskTimeMs: Double
+    override val meanTaskTimeMs: Double
         get() = taskTimeListMs.mean()
-    val meanRequestResponseTimeMs: Double
+    override val meanRequestResponseTimeMs: Double
         get() = requestResponseTimeListMs.mean()
 
     data class ResultWithTimeMeasurements<T>(

@@ -5,86 +5,96 @@ import ru.itmo.java.architectures.common.Utils.toBuffersArray
 import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
 import ru.itmo.java.architectures.server.domain.SortCallable
+import ru.itmo.java.architectures.server.tasks.Utils.thenApply
 import ru.itmo.java.architectures.server.tasks.asTimed
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousSocketChannel
 import java.nio.channels.CompletionHandler
+import java.util.concurrent.ExecutorService
 
 class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
+                               private val taskPool: ExecutorService,
                                private val startTime: Long,
                                private val onClose: AsynchronousClientWorker.() -> Unit = {}) : ClientWorker {
 
     companion object {
         fun <A> channelClosedPredicate(result: Int, attachment: A) = result == -1
-        fun <A> channelClosedPredicate(result: Long, attachment: A) = result == -1L
     }
 
-    @Volatile
-    var totalTime: Long = 0
-        private set
+    override val meanRequestResponseTimeMs: Double
+        get() = TODO("Not yet implemented")
+    override val meanTaskTimeMs: Double
+        get() = TODO("Not yet implemented")
+    private val requestResponseListMs = mutableListOf<Long>()
+    private val taskTimeListMs = mutableListOf<Long>()
 
-    @Volatile
-    var taskTime: Long = 0
-        private set
-
-    private val headerHandler = object : CompletionHandler<Int, ByteBuffer> {
-        override fun completed(result: Int?, attachment: ByteBuffer?) {
-            val buffer = attachment!!
+    private val headerHandler = object : CompletionHandler<Int, AsynchronousClientAttachment> {
+        override fun completed(result: Int?, attachment: AsynchronousClientAttachment?) {
+            val buffer = attachment?.headerBuffer!!
             if (buffer.hasRemaining()) {
-                // Continue reading header
-                channel.read(buffer, buffer, this)
+                channel.read(buffer, attachment, this)
                 return
             }
 
             buffer.flip()
             val bodySize = buffer.int
             val bodyBuffer = ByteBuffer.allocate(bodySize)
-            channel.read(bodyBuffer, bodyBuffer, bodyReadHandler)
+            attachment.bodyBuffer = bodyBuffer
+            channel.read(bodyBuffer, attachment, bodyReadHandler)
         }
 
-        override fun failed(exc: Throwable?, attachment: ByteBuffer?) {
+        override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
             TODO("Not yet implemented")
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
-    private val bodyReadHandler = object : CompletionHandler<Int, ByteBuffer> {
-        override fun completed(result: Int?, attachment: ByteBuffer?) {
-            val buffer = attachment!!
+    private val bodyReadHandler = object : CompletionHandler<Int, AsynchronousClientAttachment> {
+        override fun completed(result: Int?, attachment: AsynchronousClientAttachment?) {
+            val buffer = attachment?.bodyBuffer!!
             if (buffer.hasRemaining()) {
-                channel.read(buffer, buffer, this)
+                channel.read(buffer, attachment, this)
                 return
             }
 
             buffer.flip()
             val request = IntArrayMessage.parseFrom(buffer)
-            val (sortedArray, taskTime) = SortCallable(request.elementsList.toTypedArray())
-                    .asTimed()
-                    .call()
-            this@AsynchronousClientWorker.taskTime = taskTime
-            val response = IntArrayMessage.newBuilder()
-                    .addAllElements(sortedArray.toList())
-                    .build()
 
-            val responseBuffers = response.toBuffersArray()
-            channel.write(responseBuffers[0], responseBuffers, sendResponseHandler)
+            taskPool.submit(SortCallable(request.elementsList.toTypedArray())
+                    .asTimed()
+                    .thenApply { (sortedArray, taskTime) ->
+                        attachment.taskTimeMs = taskTime
+                        val response = IntArrayMessage.newBuilder()
+                                .addAllElements(sortedArray.toList())
+                                .build()
+                        val responseBuffers = response.toBuffersArray()
+                        attachment.responseHeaderBuffer = responseBuffers[0]
+                        attachment.responseBodyBuffer = responseBuffers[1]
+                        channel.write(responseBuffers[0], attachment, sendResponseHandler)
+                    })
+
+            readHeader()
         }
 
-        override fun failed(exc: Throwable?, attachment: ByteBuffer?) {
+        override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
             TODO("Not yet implemented")
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
-    private val sendResponseHandler = object : CompletionHandler<Int, Array<ByteBuffer>> {
-        override fun completed(result: Int?, attachment: Array<ByteBuffer>?) {
-            val responseBuffers = attachment!!
+    private val sendResponseHandler = object : CompletionHandler<Int, AsynchronousClientAttachment> {
+        override fun completed(result: Int?, attachment: AsynchronousClientAttachment?) {
+            val responseBuffers = attachment?.responseBuffers!!
             when {
-                responseBuffers[0].hasRemaining() -> channel.write(responseBuffers[0], responseBuffers, this)
-                responseBuffers[1].hasRemaining() -> channel.write(responseBuffers[1], responseBuffers, this)
-                else -> readHeader()
+                responseBuffers[0].hasRemaining() -> channel.write(responseBuffers[0], attachment, this)
+                responseBuffers[1].hasRemaining() -> channel.write(responseBuffers[1], attachment, this)
+                else -> {
+                    attachment.finish()
+                    requestResponseListMs.add(attachment.requestResponseTimeMs!!)
+                    taskTimeListMs.add(attachment.taskTimeMs!!)
+                }
             }
         }
 
-        override fun failed(exc: Throwable?, attachment: Array<ByteBuffer>?) {
+        override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
             TODO("Not yet implemented")
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
@@ -93,11 +103,11 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
 
     private fun readHeader() {
         val headerBuffer = ByteBuffer.allocate(Constants.HEADER_SIZE)
-        channel.read(headerBuffer, headerBuffer, headerHandler)
+        val attachment = AsynchronousClientAttachment(startTimeMs = System.currentTimeMillis(), headerBuffer = headerBuffer)
+        channel.read(headerBuffer, attachment, headerHandler)
     }
 
     override fun close() {
-        totalTime = System.currentTimeMillis() - startTime
         onClose()
     }
 }
