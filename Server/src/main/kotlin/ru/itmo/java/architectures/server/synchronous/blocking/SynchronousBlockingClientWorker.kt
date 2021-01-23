@@ -1,5 +1,6 @@
 package ru.itmo.java.architectures.server.synchronous.blocking
 
+import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo
 import ru.itmo.java.architectures.protocol.IntArrayMessage
@@ -25,6 +26,11 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
     private val computationTimeListMs = mutableListOf<Long>()
     private val processingTimeListMs = mutableListOf<Long>()
 
+    val meanTaskTimeMs: Double
+        get() = computationTimeListMs.mean()
+    val meanRequestResponseTimeMs: Double
+        get() = processingTimeListMs.mean()
+
     data class ResultWithTimeMeasurements<T>(
         val result: T,
         val receiveTimeMs: Long,
@@ -32,7 +38,7 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
         var totalProcessingTimeMs: Long? = null
     ) {
         fun finish() {
-            if (totalProcessingTimeMs != null) {
+            if (totalProcessingTimeMs == null) {
                 totalProcessingTimeMs = System.currentTimeMillis() - receiveTimeMs
             }
         }
@@ -62,6 +68,7 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
                     .addAllElements(resultWithTimeMeasurements.result.asList())
                     .build()
                 response.writeWithSizeTo(outputStream)
+                outputStream.flush()
 
                 resultWithTimeMeasurements.finish()
                 computationTimeListMs.add(resultWithTimeMeasurements.executionTimeMs)
