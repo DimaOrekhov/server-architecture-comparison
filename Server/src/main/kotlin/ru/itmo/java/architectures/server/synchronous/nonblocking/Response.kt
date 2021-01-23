@@ -10,7 +10,7 @@ open class Response(val id: Int, private val buffers: Array<ByteBuffer>) {
 
     fun writeTo(channel: SocketChannel): Long {
         val nWritten = channel.write(buffers, offset, length)
-        for (i in offset..buffers.size) {
+        for (i in offset until buffers.size) {
             if (buffers[i].hasRemaining()) {
                 break
             }
