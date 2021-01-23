@@ -85,8 +85,8 @@ class Experiment(private val config: ExperimentConfig) {
         val meanServerSideRequestResponseTimeMs = server.meanRequestResponseTimeMs
         server.reset()
 
-        return ExperimentStepResult(meanServerSideRequestResponseTimeMs = meanServerSideRequestResponseTimeMs.toDouble(),
-                meanServerSideTaskTimeMs = meanServerSideTaskTimeMs.toDouble(),
+        return ExperimentStepResult(meanServerSideRequestResponseTimeMs = meanServerSideRequestResponseTimeMs,
+                meanServerSideTaskTimeMs = meanServerSideTaskTimeMs,
                 meanClientSideRequestResponseTimeMs = meanClientSideRequestResponseTimeMs)
     }
 

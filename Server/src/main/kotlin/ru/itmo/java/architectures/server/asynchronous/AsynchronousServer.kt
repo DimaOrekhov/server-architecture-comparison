@@ -6,6 +6,7 @@ import java.net.InetSocketAddress
 import java.nio.channels.AsynchronousServerSocketChannel
 import java.nio.channels.AsynchronousSocketChannel
 import java.nio.channels.CompletionHandler
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Executors
 
 class AsynchronousServer(poolSize: Int) : TimedServer {
@@ -13,10 +14,11 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
     private val serverSocketChannel = AsynchronousServerSocketChannel.open()
 
     private val taskPool = Executors.newFixedThreadPool(poolSize)
+    private val clients = ConcurrentLinkedDeque<AsynchronousClientWorker>()
 
-    override val meanRequestResponseTimeMs: Long
+    override val meanRequestResponseTimeMs: Double
         get() = TODO("Not yet implemented")
-    override val meanTaskTimeMs: Long
+    override val meanTaskTimeMs: Double
         get() = TODO("Not yet implemented")
 
     override fun reset() {
@@ -30,9 +32,9 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
     private fun acceptLoop(serverSocket: AsynchronousServerSocketChannel) =
         serverSocket.accept(null, object : CompletionHandler<AsynchronousSocketChannel, Nothing?> {
             override fun completed(result: AsynchronousSocketChannel?, attachment: Nothing?) {
-                AsynchronousClientWorker(result!!, taskPool, System.currentTimeMillis()) {
-                    //TODO("ADD TIME PROCESSING CALLBACK")
-                }.start()
+                val client = AsynchronousClientWorker(result!!, taskPool, System.currentTimeMillis())
+                clients.add(client)
+                client.start()
                 serverSocket.accept(null, this)
             }
 

@@ -36,9 +36,9 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
 
     private val clients = Collections.newSetFromMap(ConcurrentHashMap<NonBlockingClientProcessor, Boolean>())
 
-    override val meanRequestResponseTimeMs: Long
+    override val meanRequestResponseTimeMs: Double
         get() = TODO("Not yet implemented")
-    override val meanTaskTimeMs: Long
+    override val meanTaskTimeMs: Double
         get() = TODO("Not yet implemented")
 
     override fun reset() {

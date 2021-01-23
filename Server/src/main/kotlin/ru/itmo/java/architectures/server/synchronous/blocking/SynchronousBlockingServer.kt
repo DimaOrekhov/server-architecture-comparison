@@ -16,15 +16,15 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
 
     @Volatile
     private var computedMetrics = false
-    private var currentMeanRequestResponseTimeMs: Long = 0
-    private var currentMeanTaskTimeMs: Long = 0
+    private var currentMeanRequestResponseTimeMs: Double = 0.0
+    private var currentMeanTaskTimeMs: Double = 0.0
 
-    override val meanRequestResponseTimeMs: Long
+    override val meanRequestResponseTimeMs: Double
         get() {
             computeMetrics()
             return currentMeanRequestResponseTimeMs
         }
-    override val meanTaskTimeMs: Long
+    override val meanTaskTimeMs: Double
         get() {
             computeMetrics()
             return currentMeanTaskTimeMs
@@ -40,8 +40,8 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
         if (computedMetrics) {
             return
         }
-        currentMeanRequestResponseTimeMs = clients.map {it.meanRequestResponseTimeMs}.mean().toLong()
-        currentMeanTaskTimeMs = clients.map {it.meanTaskTimeMs}.mean().toLong()
+        currentMeanRequestResponseTimeMs = clients.map {it.meanRequestResponseTimeMs}.mean()
+        currentMeanTaskTimeMs = clients.map {it.meanTaskTimeMs}.mean()
         computedMetrics = true
     }
 
