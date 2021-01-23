@@ -32,6 +32,12 @@ object Utils {
         return arrayOf(headerBuffer, bodyBuffer)
     }
 
+    fun Array<Int>.toIntArrayMessage(): IntArrayMessage =
+            IntArrayMessage.newBuilder().addAllElements(this.toList()).build()
+
+    fun IntArray.toIntArrayMessage(): IntArrayMessage =
+            IntArrayMessage.newBuilder().addAllElements(this.toList()).build()
+
     @kotlin.jvm.JvmName("meanOfLong")
     fun Collection<Long>.mean() = sum() / size.toDouble()
 

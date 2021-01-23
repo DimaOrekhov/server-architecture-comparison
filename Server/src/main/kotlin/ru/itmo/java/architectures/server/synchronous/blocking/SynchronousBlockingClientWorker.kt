@@ -78,7 +78,7 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
         }
     }
 
-    override fun close() {
+    override fun shutdown() {
         inputExecutor.shutdown()
         outputExecutor.shutdown()
         inputStream.close()

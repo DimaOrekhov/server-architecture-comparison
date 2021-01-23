@@ -15,9 +15,7 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ExecutorService
 
 class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
-                               private val taskPool: ExecutorService,
-                               private val startTime: Long,
-                               private val onClose: AsynchronousClientWorker.() -> Unit = {}) : ClientWorker {
+                               private val taskPool: ExecutorService) : ClientWorker {
 
     companion object {
         fun <A> channelClosedPredicate(result: Int, attachment: A) = result == -1
@@ -109,7 +107,5 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         channel.read(headerBuffer, attachment, headerHandler)
     }
 
-    override fun close() {
-        onClose()
-    }
+    override fun shutdown() {}
 }

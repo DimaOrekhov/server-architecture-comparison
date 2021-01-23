@@ -12,7 +12,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
-class NonBlockingServer(poolSize: Int) : TimedServer {
+class NonBlockingServer(poolSize: Int) : TimedServer() {
 
     companion object {
         const val INPUT_SELECT_TIMEOUT_MS = 500L
@@ -26,6 +26,7 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
         }
     }
 
+    private val serverSocket = ServerSocketChannel.open()
     private val inputSelector = Selector.open()
     private val outputSelector = Selector.open()
 
@@ -34,21 +35,12 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
     private val outputSelectorPool = Executors.newSingleThreadExecutor()
     private val taskPool = Executors.newFixedThreadPool(poolSize)
 
-    private val clients = Collections.newSetFromMap(ConcurrentHashMap<NonBlockingClientProcessor, Boolean>())
-
-    override val meanRequestResponseTimeMs: Double
-        get() = TODO("Not yet implemented")
-    override val meanTaskTimeMs: Double
-        get() = TODO("Not yet implemented")
-
-    override fun reset() {
-        TODO("Not yet implemented")
-    }
+    override val clients: MutableCollection<NonBlockingClientWorker> =
+            Collections.newSetFromMap(ConcurrentHashMap())
 
     override fun start() {
         acceptPool.submit {
-            ServerSocketChannel.open()
-                    .bind(InetSocketAddress(Constants.SERVER_ADDRESS, Constants.SERVER_PORT))
+            serverSocket.bind(InetSocketAddress(Constants.SERVER_ADDRESS, Constants.SERVER_PORT))
                     .use { serverSocketChannel -> acceptLoop(serverSocketChannel) }
         }
 
@@ -62,7 +54,7 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
         val socketChannel = serverSocketChannel.accept()
         socketChannel.configureBlocking(false)
 
-        val client = NonBlockingClientProcessor(socketChannel, taskPool)
+        val client = NonBlockingClientWorker(socketChannel, outputSelector, taskPool)
         clients.add(client)
         socketChannel.register(inputSelector, SelectionKey.OP_READ, client.inputProcessor)
     }
@@ -93,10 +85,20 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
                     return@processAndRemoveEach
                 }
 
-                val client = selectionKey.attachment()
+                val client = selectionKey.attachment() as NonBlockingClientWorker
                 val channel = selectionKey.channel() as SocketChannel
+                val responseQueue = client.responseQueue
 
-                //channel.write()
+                if (responseQueue.isEmpty()) {
+                    return@processAndRemoveEach
+                }
+
+                val response = responseQueue.peek()
+                response.writeTo(channel)
+                if (response.isEmpty()) {
+                    responseQueue.poll()
+                    client.markProcessed(response.id)
+                }
             }
 
             updateRegistered()
@@ -105,11 +107,11 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
 
     private fun updateRegistered() = clients.forEach { client ->
         val channel = client.channel
-        when (client.channelState) {
+        when (client.channelState.get()) {
             ChannelState.NEW -> {
                 channel.register(outputSelector, SelectionKey.OP_WRITE, client)
 
-                client.channelState = ChannelState.REGISTERED
+                client.channelState.set(ChannelState.REGISTERED)
             }
             ChannelState.REGISTERED -> {
                 if (client.responseQueue.isNotEmpty()) {
@@ -119,21 +121,19 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
                 val selectionKey = channel.keyFor(outputSelector)
                 selectionKey.cancel()
 
-                client.channelState = ChannelState.DEREGISTERED
-            }
-            ChannelState.DEREGISTERED -> {
-                if (client.responseQueue.isEmpty()) {
-                    return@forEach
-                }
-
-                channel.register(outputSelector, SelectionKey.OP_WRITE, client)
-
-                client.channelState = ChannelState.REGISTERED
+                client.channelState.set(ChannelState.DEREGISTERED)
             }
         }
     }
 
     override fun shutdown() {
-        TODO("Not yet implemented")
+        acceptPool.shutdown()
+        inputSelectorPool.shutdown()
+        outputSelectorPool.shutdown()
+        outputSelector.wakeup()
+        inputSelector.wakeup()
+        serverSocket.close()
+        outputSelector.close()
+        inputSelector.close()
     }
 }
