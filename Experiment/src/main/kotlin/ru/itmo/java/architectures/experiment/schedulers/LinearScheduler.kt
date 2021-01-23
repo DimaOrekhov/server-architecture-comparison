@@ -9,12 +9,12 @@ class LinearScheduler<T: Number>(val start: T, val exclusiveEnd: T, val step: T)
             sequence {
                 var current = start
                 if (start < exclusiveEnd) {
-                    while (start < exclusiveEnd) {
+                    while (current < exclusiveEnd) {
                         yield(current)
                         current = (current + step) as T
                     }
                 } else {
-                    while (start > exclusiveEnd) {
+                    while (current > exclusiveEnd) {
                         yield(current)
                         current = (current + step) as T
                     }

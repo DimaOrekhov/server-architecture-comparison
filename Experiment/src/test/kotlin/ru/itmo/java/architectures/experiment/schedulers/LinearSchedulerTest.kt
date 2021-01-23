@@ -13,21 +13,21 @@ class LinearSchedulerTest {
 
     private fun linearIntTest(start: Int, exclusiveEnd: Int, step: Int) {
         val scheduler = LinearScheduler(start, exclusiveEnd, step)
-        val iterator = scheduler.iterator()
         val rangeStep = step.absoluteValue
         val range = (if (start < exclusiveEnd) (start until exclusiveEnd) else (start downTo exclusiveEnd + 1)) step rangeStep
-        for (v in range) {
-            assertEquals(v, iterator.next())
+        val rangeIterator = range.iterator()
+        for (v in scheduler) {
+            assertEquals(rangeIterator.next(), v)
         }
     }
 
     private fun linearLongTest(start: Long, exclusiveEnd: Long, step: Long) {
         val scheduler = LinearScheduler(start, exclusiveEnd, step)
-        val iterator = scheduler.iterator()
         val rangeStep = step.absoluteValue
         val range = (if (start < exclusiveEnd) (start until exclusiveEnd) else (start downTo exclusiveEnd + 1)) step rangeStep
-        for (v in range) {
-            assertEquals(v, iterator.next())
+        val rangeIterator = range.iterator()
+        for (v in scheduler) {
+            assertEquals(rangeIterator.next(), v)
         }
     }
 
