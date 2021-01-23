@@ -38,5 +38,7 @@ class NonBlockingClientWorker(val channel: SocketChannel, selectorOut: Selector,
         taskTimeListMs.add(taskTime)
     }
 
-    override fun shutdown() {}
+    override fun shutdown() {
+        channel.close()
+    }
 }

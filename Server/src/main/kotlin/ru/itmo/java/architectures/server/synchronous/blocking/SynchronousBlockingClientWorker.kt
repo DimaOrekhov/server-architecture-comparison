@@ -2,9 +2,9 @@ package ru.itmo.java.architectures.server.synchronous.blocking
 
 import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
+import ru.itmo.java.architectures.common.Utils.toIntArrayMessage
 import ru.itmo.java.architectures.common.Utils.whileNotInterrupted
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo
-import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
 import ru.itmo.java.architectures.server.domain.SortCallable
 import ru.itmo.java.architectures.server.tasks.Utils.thenApply
@@ -65,9 +65,7 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
                     return@whileNotInterrupted
                 }
                 val resultWithTimeMeasurements = resultQueue.poll()
-                val response = IntArrayMessage.newBuilder()
-                    .addAllElements(resultWithTimeMeasurements.result.asList())
-                    .build()
+                val response = resultWithTimeMeasurements.result.toIntArrayMessage()
                 response.writeWithSizeTo(outputStream)
                 outputStream.flush()
 

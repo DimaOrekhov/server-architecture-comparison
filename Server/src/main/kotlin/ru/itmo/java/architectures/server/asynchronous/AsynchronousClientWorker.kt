@@ -3,6 +3,7 @@ package ru.itmo.java.architectures.server.asynchronous
 import ru.itmo.java.architectures.common.Constants
 import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.common.Utils.toBuffersArray
+import ru.itmo.java.architectures.common.Utils.toIntArrayMessage
 import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
 import ru.itmo.java.architectures.server.domain.SortCallable
@@ -63,10 +64,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
                     .asTimed()
                     .thenApply { (sortedArray, taskTime) ->
                         attachment.taskTimeMs = taskTime
-                        val response = IntArrayMessage.newBuilder()
-                                .addAllElements(sortedArray.toList())
-                                .build()
-                        val responseBuffers = response.toBuffersArray()
+                        val responseBuffers = sortedArray.toIntArrayMessage().toBuffersArray()
                         attachment.responseHeaderBuffer = responseBuffers[0]
                         attachment.responseBodyBuffer = responseBuffers[1]
                         channel.write(responseBuffers[0], attachment, sendResponseHandler)

@@ -1,8 +1,8 @@
 package ru.itmo.java.architectures.client
 
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
+import ru.itmo.java.architectures.common.Utils.toIntArrayMessage
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo
-import ru.itmo.java.architectures.protocol.IntArrayMessage
 import java.net.Socket
 import kotlin.random.Random
 
@@ -41,7 +41,7 @@ class Client(
 
             for (i in 1..nRequests) {
                 val elements = IntArray(nElements) { Random.nextInt() }
-                val request = IntArrayMessage.newBuilder().addAllElements(elements.toList()).build()
+                val request = elements.toIntArrayMessage()
 
                 request.writeWithSizeTo(outputStream)
                 outputStream.flush()

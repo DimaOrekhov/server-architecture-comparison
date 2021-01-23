@@ -127,9 +127,11 @@ class NonBlockingServer(poolSize: Int) : TimedServer() {
     }
 
     override fun shutdown() {
+        clients.forEach { it.shutdown() }
         acceptPool.shutdown()
         inputSelectorPool.shutdown()
         outputSelectorPool.shutdown()
+        taskPool.shutdown()
         outputSelector.wakeup()
         inputSelector.wakeup()
         serverSocket.close()

@@ -38,6 +38,7 @@ class AsynchronousServer(poolSize: Int) : TimedServer() {
 
     override fun shutdown() {
         clients.forEach { it.shutdown() }
+        taskPool.shutdown()
         serverSocketChannel.close()
     }
 }

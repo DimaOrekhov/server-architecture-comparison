@@ -22,11 +22,12 @@ class ClientPool(
     private var isTerminated = false
 
     companion object {
+        const val CLIENT_POOL_SIZE = 4
         const val AWAIT_STEP_MS = 1_000L
         const val MAX_AWAIT_TIME_MS = 30_000L
     }
 
-    private val clientsThreadPool = Executors.newFixedThreadPool(nClients) // TODO: Maybe make cached?
+    private val clientsThreadPool = Executors.newFixedThreadPool(CLIENT_POOL_SIZE)
 
     private val clients = Array(nClients) { Client(address, port, nRequests, nElements, requestDelay, this::signalFinished) }
 
