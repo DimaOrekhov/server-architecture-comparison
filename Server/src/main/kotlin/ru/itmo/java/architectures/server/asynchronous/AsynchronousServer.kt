@@ -1,6 +1,7 @@
 package ru.itmo.java.architectures.server.asynchronous
 
 import ru.itmo.java.architectures.common.Constants
+import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.server.domain.TimedServer
 import java.net.InetSocketAddress
 import java.nio.channels.AsynchronousServerSocketChannel
@@ -16,13 +17,34 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
     private val taskPool = Executors.newFixedThreadPool(poolSize)
     private val clients = ConcurrentLinkedDeque<AsynchronousClientWorker>()
 
+    private var currentMeanRequestResponseTimeMs: Double = 0.0
+    private var currentMeanTaskTimeMs: Double = 0.0
     override val meanRequestResponseTimeMs: Double
-        get() = TODO("Not yet implemented")
+        get() {
+            computeMetrics()
+            return currentMeanRequestResponseTimeMs
+        }
     override val meanTaskTimeMs: Double
-        get() = TODO("Not yet implemented")
+        get() {
+            computeMetrics()
+            return currentMeanTaskTimeMs
+        }
+
+    @Volatile
+    private var computedMetrics = false
 
     override fun reset() {
-        TODO("Not yet implemented")
+        clients.forEach { it.close() }
+        clients.clear()
+        computedMetrics = false
+    }
+
+    private fun computeMetrics() {
+        if (computedMetrics) {
+            return
+        }
+        currentMeanRequestResponseTimeMs = clients.map { it.meanRequestResponseTimeMs }.mean()
+        currentMeanTaskTimeMs = clients.map { it.meanTaskTimeMs }.mean()
     }
 
     override fun start() = serverSocketChannel
@@ -44,6 +66,7 @@ class AsynchronousServer(poolSize: Int) : TimedServer {
         })
 
     override fun shutdown() {
-        TODO("Not yet implemented")
+        clients.forEach { it.close() }
+        serverSocketChannel.close()
     }
 }

@@ -1,6 +1,7 @@
 package ru.itmo.java.architectures.server.asynchronous
 
 import ru.itmo.java.architectures.common.Constants
+import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.common.Utils.toBuffersArray
 import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
@@ -10,6 +11,7 @@ import ru.itmo.java.architectures.server.tasks.asTimed
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousSocketChannel
 import java.nio.channels.CompletionHandler
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ExecutorService
 
 class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
@@ -22,11 +24,11 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
     }
 
     override val meanRequestResponseTimeMs: Double
-        get() = TODO("Not yet implemented")
+        get() = requestResponseListMs.mean()
     override val meanTaskTimeMs: Double
-        get() = TODO("Not yet implemented")
-    private val requestResponseListMs = mutableListOf<Long>()
-    private val taskTimeListMs = mutableListOf<Long>()
+        get() = taskTimeListMs.mean()
+    private val requestResponseListMs = ConcurrentLinkedDeque<Long>()
+    private val taskTimeListMs = ConcurrentLinkedDeque<Long>()
 
     private val headerHandler = object : CompletionHandler<Int, AsynchronousClientAttachment> {
         override fun completed(result: Int?, attachment: AsynchronousClientAttachment?) {
