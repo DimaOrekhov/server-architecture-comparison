@@ -24,41 +24,46 @@ class Experiment(private val config: ExperimentConfig) {
         ServerArchitectureType.NONBLOCKING -> NonBlockingServer(Constants.SERVER_POOL_SIZE)
     }
 
-    fun run() {
+    fun run(): ExperimentResult {
         server.start()
         validateConfig()
-        config.iterateOver()
+        val results = config.iterateOver()
+        server.shutdown()
+        return ExperimentResult(config, results)
     }
 
     private fun validateConfig() {
         val numberOfNonConstantSchedulers: Int = config.getSchedulers()
                 .sumBy { if (it.isNotConstant()) 1 else 0 }
 
-        when (numberOfNonConstantSchedulers) {
-            0 -> throw IllegalArgumentException("Specify parameter to vary")
-            1 -> throw IllegalArgumentException("Experiment configuration with multiple varying parameters is not supported")
+        when {
+            numberOfNonConstantSchedulers == 0 ->
+                throw IllegalArgumentException("Specify parameter to vary")
+            numberOfNonConstantSchedulers > 1 ->
+                throw IllegalArgumentException("Experiment configuration with multiple varying parameters is not supported")
         }
     }
 
-    private fun ExperimentConfig.iterateOver() {
+    private fun ExperimentConfig.iterateOver(): List<ExperimentStepResult> {
         val nRequests = nRequestsScheduler.iterator().next()
         val nClients = nClientsScheduler.iterator().next()
         val nElements = nElementsScheduler.iterator().next()
         val requestDelayMs = requestDelayMsScheduler.iterator().next()
 
-        when {
-            nRequestsScheduler.isNotConstant() -> nRequestsScheduler.forEach {
+        return when {
+            nRequestsScheduler.isNotConstant() -> nRequestsScheduler.map {
                 step(nRequests = it, nClients = nClients, nElements = nElements, requestDelayMs = requestDelayMs)
             }
-            nClientsScheduler.isNotConstant() -> nClientsScheduler.forEach {
+            nClientsScheduler.isNotConstant() -> nClientsScheduler.map {
                 step(nRequests = nRequests, nClients = it, nElements = nElements, requestDelayMs = requestDelayMs)
             }
-            nElementsScheduler.isNotConstant() -> nElementsScheduler.forEach {
+            nElementsScheduler.isNotConstant() -> nElementsScheduler.map {
                 step(nRequests = nRequests, nClients = nClients, nElements = it, requestDelayMs =requestDelayMs)
             }
-            requestDelayMsScheduler.isNotConstant() -> requestDelayMsScheduler.forEach {
+            requestDelayMsScheduler.isNotConstant() -> requestDelayMsScheduler.map {
                 step(nRequests = nRequests, nClients = nClients, nElements = nElements, requestDelayMs = it)
             }
+            else -> emptyList()
         }
     }
 
@@ -74,14 +79,15 @@ class Experiment(private val config: ExperimentConfig) {
         clientPool.run()
 
         val meanClientSideRequestResponseTimeMs = clientPool.awaitTerminationAndGetMeanClientTime()
+        clientPool.shutdown()
 
         val meanServerSideTaskTimeMs = server.meanTaskTimeMs
         val meanServerSideRequestResponseTimeMs = server.meanRequestResponseTimeMs
-        server.resetMeasurements()
+        server.reset()
 
         return ExperimentStepResult(meanServerSideRequestResponseTimeMs = meanServerSideRequestResponseTimeMs.toDouble(),
                 meanServerSideTaskTimeMs = meanServerSideTaskTimeMs.toDouble(),
-                meanClientSideRequestResponseTimeMs = meanClientSideRequestResponseTimeMs.toDouble())
+                meanClientSideRequestResponseTimeMs = meanClientSideRequestResponseTimeMs)
     }
 
 }

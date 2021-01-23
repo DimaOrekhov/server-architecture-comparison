@@ -3,7 +3,6 @@ package ru.itmo.java.architectures.client
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo
 import ru.itmo.java.architectures.protocol.IntArrayMessage
-import java.io.Closeable
 import java.net.Socket
 import kotlin.random.Random
 
@@ -12,25 +11,34 @@ class Client(
     private val port: Int,
     private val nRequests: Int,
     private val nElements: Int,
-    private val requestDelay: Long
-) : Runnable, Closeable {
+    private val requestDelay: Long,
+    private val onFinished: () -> Unit
+) : Runnable {
+
+    enum class ClientState { NEW, RUNNING, DONE, FAILED }
 
     @Volatile
-    var isDone = false
+    var state = ClientState.NEW
         private set
     var runningTime: Long = 0
+        private set
+    var meanRequestResponseTime: Double = 0.0
         private set
     @Volatile
     private lateinit var clientThread: Thread
 
+    var excpetion: Throwable? = null
+        private set
+
     override fun run() {
         val startTime = System.currentTimeMillis()
-        Socket(address, port).use { socket ->
+        state = ClientState.RUNNING
+        try {
+            val socket = Socket(address, port)
             clientThread = Thread.currentThread()
             val inputStream = socket.getInputStream()
             val outputStream = socket.getOutputStream()
 
-            // Do I need to check interruption?
             for (i in 1..nRequests) {
                 val elements = IntArray(nElements) { Random.nextInt() }
                 val request = IntArrayMessage.newBuilder().addAllElements(elements.toList()).build()
@@ -38,15 +46,19 @@ class Client(
                 request.writeWithSizeTo(outputStream)
                 outputStream.flush()
 
-                readWithSizeFrom(inputStream)
+                val response = readWithSizeFrom(inputStream)
 
                 Thread.sleep(requestDelay)
             }
-        }
-        runningTime = System.currentTimeMillis() - startTime
-        isDone = true
-    }
+        } catch (e: Throwable) {
+            excpetion = e
+            throw e
+        } finally {
+            runningTime = System.currentTimeMillis() - startTime
+            meanRequestResponseTime = runningTime / nRequests.toDouble()
+            state = if (excpetion == null) ClientState.DONE else ClientState.FAILED
 
-    // TODO: do I need this method at all?
-    override fun close() = clientThread.interrupt()
+            onFinished()
+        }
+    }
 }
