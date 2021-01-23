@@ -1,5 +1,6 @@
 package ru.itmo.java.architectures.server.synchronous.nonblocking
 
+import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.server.domain.ClientWorker
 import java.nio.channels.Selector
 import java.nio.channels.SocketChannel
@@ -21,9 +22,9 @@ class NonBlockingClientWorker(val channel: SocketChannel, selectorOut: Selector,
     private val requestResponseTimeListMs = ConcurrentLinkedDeque<Long>()
 
     override val meanRequestResponseTimeMs: Double
-        get() = TODO("Not yet implemented")
+        get() = taskTimeListMs.mean()
     override val meanTaskTimeMs: Double
-        get() = TODO("Not yet implemented")
+        get() = requestResponseTimeListMs.mean()
 
     fun saveReceiveTime(id: Int, time: Long) {
         startTimes[id] = time
@@ -37,7 +38,5 @@ class NonBlockingClientWorker(val channel: SocketChannel, selectorOut: Selector,
         taskTimeListMs.add(taskTime)
     }
 
-    override fun shutdown() {
-        TODO("Not yet implemented")
-    }
+    override fun shutdown() {}
 }
