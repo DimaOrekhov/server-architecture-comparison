@@ -2,6 +2,7 @@ package ru.itmo.java.architectures.server.synchronous.blocking
 
 import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.common.Utils.readWithSizeFrom
+import ru.itmo.java.architectures.common.Utils.whileNotInterrupted
 import ru.itmo.java.architectures.common.Utils.writeWithSizeTo
 import ru.itmo.java.architectures.protocol.IntArrayMessage
 import ru.itmo.java.architectures.server.domain.ClientWorker
@@ -23,13 +24,13 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
     private val outputExecutor = Executors.newSingleThreadExecutor()
     private val outputStream = DataOutputStream(socket.getOutputStream())
 
-    private val computationTimeListMs = mutableListOf<Long>()
-    private val processingTimeListMs = mutableListOf<Long>()
+    private val taskTimeListMs = mutableListOf<Long>()
+    private val requestResponseTimeListMs = mutableListOf<Long>()
 
     val meanTaskTimeMs: Double
-        get() = computationTimeListMs.mean()
+        get() = taskTimeListMs.mean()
     val meanRequestResponseTimeMs: Double
-        get() = processingTimeListMs.mean()
+        get() = requestResponseTimeListMs.mean()
 
     data class ResultWithTimeMeasurements<T>(
         val result: T,
@@ -46,7 +47,7 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
 
     fun start() {
         inputExecutor.submit {
-            while (!Thread.interrupted()) {
+            whileNotInterrupted {
                 val request = readWithSizeFrom(inputStream)
                 val receiveTimeMs = System.currentTimeMillis()
 
@@ -59,9 +60,9 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
         }
 
         outputExecutor.submit {
-            while (!Thread.interrupted()) {
+            whileNotInterrupted {
                 if (resultQueue.isEmpty()) {
-                    continue
+                    return@whileNotInterrupted
                 }
                 val resultWithTimeMeasurements = resultQueue.poll()
                 val response = IntArrayMessage.newBuilder()
@@ -71,8 +72,8 @@ class SynchronousBlockingClientWorker(private val socket: Socket, private val gl
                 outputStream.flush()
 
                 resultWithTimeMeasurements.finish()
-                computationTimeListMs.add(resultWithTimeMeasurements.executionTimeMs)
-                processingTimeListMs.add(resultWithTimeMeasurements.totalProcessingTimeMs!!)
+                taskTimeListMs.add(resultWithTimeMeasurements.executionTimeMs)
+                requestResponseTimeListMs.add(resultWithTimeMeasurements.totalProcessingTimeMs!!)
             }
         }
     }

@@ -31,6 +31,7 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
         }
 
     override fun reset() {
+        clients.forEach { it.close() }
         clients.clear()
         computedMetrics = false
     }
