@@ -41,7 +41,7 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
     override val meanTaskTimeMs: Long
         get() = TODO("Not yet implemented")
 
-    override fun resetMeasurements() {
+    override fun reset() {
         TODO("Not yet implemented")
     }
 
@@ -133,7 +133,7 @@ class NonBlockingServer(poolSize: Int) : TimedServer {
         }
     }
 
-    override fun close() {
+    override fun shutdown() {
         TODO("Not yet implemented")
     }
 }

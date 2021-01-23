@@ -5,5 +5,5 @@ interface TimedServer: Server {
 
     val meanTaskTimeMs: Long
 
-    fun resetMeasurements()
+    fun reset()
 }

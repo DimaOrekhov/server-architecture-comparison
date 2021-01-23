@@ -14,9 +14,15 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
                                private val startTime: Long,
                                private val onClose: AsynchronousClientWorker.() -> Unit = {}) : ClientWorker {
 
+    companion object {
+        fun <A> channelClosedPredicate(result: Int, attachment: A) = result == -1
+        fun <A> channelClosedPredicate(result: Long, attachment: A) = result == -1L
+    }
+
     @Volatile
     var totalTime: Long = 0
         private set
+
     @Volatile
     var taskTime: Long = 0
         private set
@@ -39,7 +45,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         override fun failed(exc: Throwable?, attachment: ByteBuffer?) {
             TODO("Not yet implemented")
         }
-    }
+    }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
     private val bodyReadHandler = object : CompletionHandler<Int, ByteBuffer> {
         override fun completed(result: Int?, attachment: ByteBuffer?) {
@@ -66,7 +72,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         override fun failed(exc: Throwable?, attachment: ByteBuffer?) {
             TODO("Not yet implemented")
         }
-    }
+    }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
     private val sendResponseHandler = object : CompletionHandler<Int, Array<ByteBuffer>> {
         override fun completed(result: Int?, attachment: Array<ByteBuffer>?) {
@@ -81,7 +87,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         override fun failed(exc: Throwable?, attachment: Array<ByteBuffer>?) {
             TODO("Not yet implemented")
         }
-    }
+    }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
     fun start() = readHeader()
 

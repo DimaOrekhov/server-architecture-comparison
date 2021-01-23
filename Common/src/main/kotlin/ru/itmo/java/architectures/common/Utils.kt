@@ -13,7 +13,7 @@ object Utils {
         val messageSize = DataInputStream(inputStream).readInt()
         val bytes = ByteArray(messageSize)
         inputStream.read(bytes)
-        return IntArrayMessage.parseFrom(inputStream)
+        return IntArrayMessage.parseFrom(bytes)
     }
 
     fun IntArrayMessage.writeWithSizeTo(outputStream: OutputStream) {
@@ -27,6 +27,7 @@ object Utils {
         val size = bytes.size
         val headerBuffer = ByteBuffer.allocate(4)
         headerBuffer.putInt(size)
+        headerBuffer.flip()
         val bodyBuffer = ByteBuffer.wrap(bytes)
         return arrayOf(headerBuffer, bodyBuffer)
     }
@@ -36,6 +37,9 @@ object Utils {
 
     @kotlin.jvm.JvmName("meanOfInt")
     fun Collection<Int>.mean() = sum() / size.toDouble()
+
+    @kotlin.jvm.JvmName("meanOfDouble")
+    fun Collection<Double>.mean() = sum() / size.toDouble()
 
     fun whileNotInterrupted(body: () -> Unit) {
         while (!Thread.interrupted()) {

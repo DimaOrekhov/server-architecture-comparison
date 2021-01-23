@@ -1,6 +1,7 @@
 package ru.itmo.java.architectures.server.synchronous.blocking
 
 import ru.itmo.java.architectures.common.Constants
+import ru.itmo.java.architectures.common.Utils.mean
 import ru.itmo.java.architectures.server.domain.TimedServer
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -13,13 +14,34 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
     private val globalThreadPool = Executors.newFixedThreadPool(poolSize)
     private val clients = mutableListOf<SynchronousBlockingClientWorker>()
 
-    override val meanRequestResponseTimeMs: Long
-        get() = TODO("Not yet implemented")
-    override val meanTaskTimeMs: Long
-        get() = TODO("Not yet implemented")
+    @Volatile
+    private var computedMetrics = false
+    private var currentMeanRequestResponseTimeMs: Long = 0
+    private var currentMeanTaskTimeMs: Long = 0
 
-    override fun resetMeasurements() {
-        TODO("Not yet implemented")
+    override val meanRequestResponseTimeMs: Long
+        get() {
+            computeMetrics()
+            return currentMeanRequestResponseTimeMs
+        }
+    override val meanTaskTimeMs: Long
+        get() {
+            computeMetrics()
+            return currentMeanTaskTimeMs
+        }
+
+    override fun reset() {
+        clients.clear()
+        computedMetrics = false
+    }
+
+    private fun computeMetrics() {
+        if (computedMetrics) {
+            return
+        }
+        currentMeanRequestResponseTimeMs = clients.map {it.meanRequestResponseTimeMs}.mean().toLong()
+        currentMeanTaskTimeMs = clients.map {it.meanTaskTimeMs}.mean().toLong()
+        computedMetrics = true
     }
 
     override fun start() {
@@ -37,11 +59,10 @@ class SynchronousBlockingServer(poolSize: Int) : TimedServer {
         }
     }
 
-    override fun close() {
+    override fun shutdown() {
         acceptPool.shutdown()
         clients.forEach { it.close() }
         globalThreadPool.shutdown()
-        // TODO: save time here
     }
 
     private fun createClient(socket: Socket) {
