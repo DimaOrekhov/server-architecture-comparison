@@ -19,4 +19,9 @@ object GUIConstants {
     const val INCORRECT_INPUT_FORMAT_MESSAGE = "Some input data is either missing or of incorrect format"
 
     const val RESULTS_DIRECTORY = "results"
+
+    const val DEFAULT_N_REQUESTS = "20"
+    const val DEFAULT_N_ELEMENTS = "1000"
+    const val DEFAULT_N_CLIENTS = "10"
+    const val DEFAULT_DELAY_MS = "150"
 }

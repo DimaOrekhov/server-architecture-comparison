@@ -52,8 +52,8 @@ object SwingDSL {
             add(it)
         }
 
-    fun Container.textField(width: Int = 5, initializer: JTextField.() -> Unit = {}) =
-        JTextField(width).also {
+    fun Container.textField(text: String = "", width: Int = 5, initializer: JTextField.() -> Unit = {}) =
+        JTextField(text, width).also {
             it.initializer()
             add(it)
         }

@@ -1,4 +1,8 @@
 import GUIConstants.APP_NAME
+import GUIConstants.DEFAULT_DELAY_MS
+import GUIConstants.DEFAULT_N_CLIENTS
+import GUIConstants.DEFAULT_N_ELEMENTS
+import GUIConstants.DEFAULT_N_REQUESTS
 import GUIConstants.FIELD_PADDING
 import GUIConstants.INCORRECT_INPUT_FORMAT_MESSAGE
 import GUIConstants.MAIN_FRAME_HEIGHT
@@ -87,7 +91,7 @@ class Application {
 
                 row {
                     label("Number of requests per client (X):")
-                    nRequestsField = textField()
+                    nRequestsField = textField(DEFAULT_N_REQUESTS)
                 }
 
                 row {
@@ -123,15 +127,15 @@ class Application {
     private fun Container.parameterFields() =
         row {
             label("N")
-            val nElementsField = textField()
+            val nElementsField = textField(DEFAULT_N_ELEMENTS)
             rigidArea(FIELD_PADDING, 0)
 
             label("M")
-            val nClientsField = textField()
+            val nClientsField = textField(DEFAULT_N_CLIENTS)
             rigidArea(FIELD_PADDING, 0)
 
             label("Delta")
-            val delayMsField = textField()
+            val delayMsField = textField(DEFAULT_DELAY_MS)
 
             parameterFields = ParameterFields(nClients = nClientsField, nElements = nElementsField, delayMs = delayMsField)
         }
