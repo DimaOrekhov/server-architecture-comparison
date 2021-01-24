@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
 class NonBlockingServer(poolSize: Int) : TimedServer() {
 
     companion object {
-        const val INPUT_SELECT_TIMEOUT_MS = 500L
+        const val INPUT_SELECT_TIMEOUT_MS = 100L
 
         fun <T> MutableIterator<T>.processAndRemoveEach(body: (T) -> Unit) {
             while (hasNext()) {
