@@ -1,5 +1,6 @@
 import GUIConstants.APP_NAME
 import GUIConstants.FIELD_PADDING
+import GUIConstants.INCORRECT_INPUT_FORMAT_MESSAGE
 import GUIConstants.MAIN_FRAME_HEIGHT
 import GUIConstants.MAIN_FRAME_WIDTH
 import GUIConstants.PLOT_HEIGHT
@@ -24,10 +25,7 @@ import java.awt.Color
 import java.awt.Container
 import java.awt.GridLayout
 import java.util.concurrent.Executors
-import javax.swing.BoxLayout
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 
 fun main() {
@@ -37,11 +35,20 @@ fun main() {
 
 class Application {
 
+    data class ParameterFields(val nClients: JTextField, val nElements: JTextField, val delayMs: JTextField)
+
+    data class SchedulerFields(val from: JTextField, val to: JTextField, val step: JTextField)
+
     private val experimentPool = Executors.newSingleThreadExecutor()
 
     private lateinit var displayPanel: JPanel
     private lateinit var controlPanel: JPanel
+    private lateinit var nRequestsField: JTextField
+    private lateinit var parameterFields: ParameterFields
+    private lateinit var schedulerFields: SchedulerFields
 
+    private lateinit var architectureComboBox: JComboBox<ServerArchitectureType>
+    private lateinit var parameterComboBox: JComboBox<ParametersOfInterest>
 
     fun launch() = SwingUtilities.invokeLater { buildMainFrame() }
 
@@ -65,23 +72,22 @@ class Application {
 
     private fun JFrame.controlPane() =
         panel {
-            val panel = this
             background = Color.LIGHT_GRAY
 
             column {
                 row {
                     label("Architecture:")
-                    comboBox(ServerArchitectureType.values()) {}
+                    architectureComboBox = comboBox(ServerArchitectureType.values())
                 }
 
                 row {
                     label("Number of requests per client (X):")
-                    textField()
+                    nRequestsField = textField()
                 }
 
                 row {
                     label("Parameter of interest:")
-                    comboBox(ParametersOfInterest.values())
+                    parameterComboBox = comboBox(ParametersOfInterest.values())
                 }
 
                 schedulerFields()
@@ -90,9 +96,19 @@ class Application {
 
                 button("Launch") {
                     experimentPool.submit {
-                        val config = getConfigFromFields()
+                        val configWithParameter = getConfigFromFields()
+
+                        if (configWithParameter == null) {
+                            SwingUtilities.invokeLater {
+                                notifyIncorrectInput()
+                            }
+                            return@submit
+                        }
+
+                        val (config, parameter) = configWithParameter
+
                         val results = Experiment(config).run()
-                        SwingUtilities.invokeLater { showResults(results) }
+                        SwingUtilities.invokeLater { showResults(results, parameter) }
                         saveResults(results)
                     }
                 }
@@ -102,15 +118,17 @@ class Application {
     private fun Container.parameterFields() =
         row {
             label("N")
-            textField()
+            val nElementsField = textField()
             rigidArea(FIELD_PADDING, 0)
 
             label("M")
-            textField()
+            val nClientsField = textField()
             rigidArea(FIELD_PADDING, 0)
 
             label("Delta")
-            textField()
+            val delayMsField = textField()
+
+            parameterFields = ParameterFields(nClients = nClientsField, nElements = nElementsField, delayMs = delayMsField)
         }
 
     private fun Container.schedulerFields() =
@@ -119,35 +137,94 @@ class Application {
             rigidArea(FIELD_PADDING, 0)
 
             label("From")
-            textField()
+            val fromField = textField()
             rigidArea(FIELD_PADDING, 0)
 
             label("To")
-            textField()
+            val toField = textField()
             rigidArea(FIELD_PADDING, 0)
 
             label("Step")
-            textField()
+            val stepField = textField()
+
+            schedulerFields = SchedulerFields(fromField, toField, stepField)
         }
 
-    private fun getConfigFromFields(): ExperimentConfig {
-        return ExperimentConfig(ServerArchitectureType.ASYNCHRONOUS,
-            nRequestsScheduler = ConstantScheduler(10),
-            nClientsScheduler = ConstantScheduler(2),
-            nElementsScheduler = LinearScheduler(100, 200, 200),
-            requestDelayMsScheduler = ConstantScheduler(100)
-        )
+    data class ConfigWithParameter(val config: ExperimentConfig, val parametersOfInterest: ParametersOfInterest)
+
+    private fun getConfigFromFields(): ConfigWithParameter? {
+        val architectureType = architectureComboBox.selectedItem as ServerArchitectureType
+        val nRequestsScheduler = ConstantScheduler(nRequestsField.getInt() ?: return null)
+
+        val fromValue = schedulerFields.from.getInt() ?: return null
+        val toValue = schedulerFields.to.getInt()?.apply { this + 1 } ?: return null
+        val stepValue = schedulerFields.step.getInt() ?: return null
+
+        val nClientsConstantScheduler =
+            ConstantScheduler(parameterFields.nClients.getInt() ?: return null)
+        val nElementsConstantScheduler =
+            ConstantScheduler(parameterFields.nElements.getInt() ?: return null)
+        val requestDelayMsConstantScheduler =
+            ConstantScheduler(parameterFields.delayMs.getInt()?.toLong() ?: return null)
+
+        val parameter = parameterComboBox.selectedItem as ParametersOfInterest
+        val config = when (parameter) {
+            ParametersOfInterest.N -> ExperimentConfig(architectureType,
+                nRequestsScheduler = nRequestsScheduler,
+                nClientsScheduler = nClientsConstantScheduler,
+                nElementsScheduler = LinearScheduler(fromValue, toValue, stepValue),
+                requestDelayMsScheduler = requestDelayMsConstantScheduler)
+
+            ParametersOfInterest.M -> ExperimentConfig(architectureType,
+                nRequestsScheduler = nRequestsScheduler,
+                nClientsScheduler = LinearScheduler(fromValue, toValue, stepValue),
+                nElementsScheduler = nElementsConstantScheduler,
+                requestDelayMsScheduler = requestDelayMsConstantScheduler)
+
+            ParametersOfInterest.Delta -> ExperimentConfig(architectureType,
+                nRequestsScheduler = nRequestsScheduler,
+                nClientsScheduler = nClientsConstantScheduler,
+                nElementsScheduler = nElementsConstantScheduler,
+                requestDelayMsScheduler = LinearScheduler(fromValue.toLong(), toValue.toLong(), stepValue.toLong()))
+        }
+
+        return ConfigWithParameter(config, parameter)
     }
 
-    private fun showResults(results: ExperimentResult) {
+    private fun JTextField.getInt() = try { text.toInt() } catch (e: NumberFormatException) { null }
+
+    private fun notifyIncorrectInput() {
+        JOptionPane.showMessageDialog(controlPanel, INCORRECT_INPUT_FORMAT_MESSAGE)
+    }
+
+    private fun showResults(results: ExperimentResult,
+                            parametersOfInterest: ParametersOfInterest) {
         displayPanel.removeAll()
 
-        val plot = plot(intArrayOf(1, 2, 3), intArrayOf(1, 4, 9), "Mean client-side time",
-            "param", "Milliseconds", "arch")
+        val xRange = results.config.run {
+            when (parametersOfInterest) {
+                ParametersOfInterest.N -> nElementsScheduler.toList()
+                ParametersOfInterest.M -> nClientsScheduler.toList()
+                ParametersOfInterest.Delta -> requestDelayMsScheduler.map { it.toInt() }
+            }
+        }
+        val architectureName = results.config.architectureType.showName
 
-        displayPanel.add(plot.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
-        displayPanel.add(plot.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
-        displayPanel.add(plot.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
+        val yClientSide = results.stepResults.map { it.meanClientSideRequestResponseTimeMs }
+        val clientSide = plot(yClientSide, xRange, "Mean client-side time",
+            parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
+
+        val yServerSide = results.stepResults.map { it.meanServerSideRequestResponseTimeMs }
+        val serverSide = plot(yServerSide, xRange, "Mean server-side total time",
+            parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
+
+        val yTaskTime = results.stepResults.map { it.meanServerSideTaskTimeMs }
+        val serverSideTask = plot(yTaskTime, xRange, "Mean server-side task time",
+            parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
+
+        displayPanel.add(serverSideTask.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
+        displayPanel.add(serverSide.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
+        displayPanel.add(clientSide.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
         displayPanel.revalidate()
     }
 

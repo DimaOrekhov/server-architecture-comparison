@@ -13,4 +13,8 @@ object GUIConstants {
 
     val PLOT_FONT = Font("Arial", Font.PLAIN, 16)
     val AXIS_FONT = Font("Arial", Font.PLAIN, 12)
+
+    const val PLOT_Y_LABEL = "Milliseconds"
+
+    const val INCORRECT_INPUT_FORMAT_MESSAGE = "Some input data is either missing or of incorrect format"
 }

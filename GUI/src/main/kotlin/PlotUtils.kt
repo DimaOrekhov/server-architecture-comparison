@@ -6,8 +6,8 @@ import org.jfree.data.category.DefaultCategoryDataset
 
 object PlotUtils {
 
-    fun plot(xValues: IntArray,
-             yValues: IntArray,
+    fun <T: Comparable<T>> plot(xValues: Iterable<Number>,
+             yValues: Iterable<T>,
              title: String,
              xLabel: String,
              yLabel: String,

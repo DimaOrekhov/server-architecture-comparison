@@ -58,20 +58,6 @@ object SwingDSL {
             add(it)
         }
 
-    fun Container.intField() {
-
-    }
-
-    fun Container.longField() {
-
-    }
-
-    infix fun ActionListener.addAction(action: () -> Unit) {
-
-    }
-
-    fun Container.verticalGlue(): Component = Box.createVerticalGlue().also { add(it) }
-
     fun Container.rigidArea(width: Int, height: Int): Component =
         Box.createRigidArea(Dimension(width, height)).also { add(it) }
 }
