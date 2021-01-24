@@ -1,0 +1,50 @@
+Architecture kind: "Nonblocking"
+Number of clients: 5
+Number of requests per client: 20
+Number of elements in array: 1000
+Delay between requests ms: [1, 2002, 200]
+result:
+    -
+        meanServerSideRequestResponseTimeMs: 2.98
+        meanServerSideTaskTimeMs: 3.6799999999999997
+        meanClientSideRequestResponseTimeMs: 10.09
+    -
+        meanServerSideRequestResponseTimeMs: 1.4100000000000001
+        meanServerSideTaskTimeMs: 1.9100000000000001
+        meanClientSideRequestResponseTimeMs: 210.29000000000002
+    -
+        meanServerSideRequestResponseTimeMs: 1.45
+        meanServerSideTaskTimeMs: 1.89
+        meanClientSideRequestResponseTimeMs: 409.8
+    -
+        meanServerSideRequestResponseTimeMs: 1.6400000000000001
+        meanServerSideTaskTimeMs: 1.9100000000000001
+        meanClientSideRequestResponseTimeMs: 610.04
+    -
+        meanServerSideRequestResponseTimeMs: 1.5699999999999998
+        meanServerSideTaskTimeMs: 1.92
+        meanClientSideRequestResponseTimeMs: 806.5999999999999
+    -
+        meanServerSideRequestResponseTimeMs: 1.49
+        meanServerSideTaskTimeMs: 2.02
+        meanClientSideRequestResponseTimeMs: 1007.0799999999999
+    -
+        meanServerSideRequestResponseTimeMs: 1.52
+        meanServerSideTaskTimeMs: 1.83
+        meanClientSideRequestResponseTimeMs: 1207.3200000000002
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN

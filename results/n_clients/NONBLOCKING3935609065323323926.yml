@@ -1,0 +1,50 @@
+Architecture kind: "Nonblocking"
+Number of clients: [1, 52, 5]
+Number of requests per client: 20
+Number of elements in array: 1000
+Delay between requests ms: 150
+result:
+    -
+        meanServerSideRequestResponseTimeMs: 3.95
+        meanServerSideTaskTimeMs: 5.0
+        meanClientSideRequestResponseTimeMs: 163.6
+    -
+        meanServerSideRequestResponseTimeMs: 1.3583333333333332
+        meanServerSideTaskTimeMs: 1.95
+        meanClientSideRequestResponseTimeMs: 158.63333333333333
+    -
+        meanServerSideRequestResponseTimeMs: 1.5545454545454547
+        meanServerSideTaskTimeMs: 1.9136363636363634
+        meanClientSideRequestResponseTimeMs: 158.24090909090907
+    -
+        meanServerSideRequestResponseTimeMs: 1.4
+        meanServerSideTaskTimeMs: 1.79375
+        meanClientSideRequestResponseTimeMs: 157.759375
+    -
+        meanServerSideRequestResponseTimeMs: 1.5142857142857142
+        meanServerSideTaskTimeMs: 1.8235588972431076
+        meanClientSideRequestResponseTimeMs: 158.04761904761904
+    -
+        meanServerSideRequestResponseTimeMs: 1.4730769230769232
+        meanServerSideTaskTimeMs: 1.80748987854251
+        meanClientSideRequestResponseTimeMs: 158.3942307692308
+    -
+        meanServerSideRequestResponseTimeMs: 1.440322580645161
+        meanServerSideTaskTimeMs: 1.8145161290322578
+        meanClientSideRequestResponseTimeMs: 158.37741935483865
+    -
+        meanServerSideRequestResponseTimeMs: 1.3472222222222225
+        meanServerSideTaskTimeMs: 1.6777777777777778
+        meanClientSideRequestResponseTimeMs: 157.92777777777775
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: NaN
+        meanServerSideTaskTimeMs: NaN
+        meanClientSideRequestResponseTimeMs: NaN

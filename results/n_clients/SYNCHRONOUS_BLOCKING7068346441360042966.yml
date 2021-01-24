@@ -1,0 +1,50 @@
+Architecture kind: "Synchronous blocking"
+Number of clients: [1, 52, 5]
+Number of requests per client: 20
+Number of elements in array: 1000
+Delay between requests ms: 150
+result:
+    -
+        meanServerSideRequestResponseTimeMs: 2.75
+        meanServerSideTaskTimeMs: 2.05
+        meanClientSideRequestResponseTimeMs: 165.05
+    -
+        meanServerSideRequestResponseTimeMs: 0.9833333333333334
+        meanServerSideTaskTimeMs: 0.7999999999999999
+        meanClientSideRequestResponseTimeMs: 154.5
+    -
+        meanServerSideRequestResponseTimeMs: 1.5727272727272725
+        meanServerSideTaskTimeMs: 1.259090909090909
+        meanClientSideRequestResponseTimeMs: 154.23636363636365
+    -
+        meanServerSideRequestResponseTimeMs: 3.1125
+        meanServerSideTaskTimeMs: 1.3218750000000001
+        meanClientSideRequestResponseTimeMs: 155.85625
+    -
+        meanServerSideRequestResponseTimeMs: 8.966666666666667
+        meanServerSideTaskTimeMs: 1.3714285714285714
+        meanClientSideRequestResponseTimeMs: 162.0428571428572
+    -
+        meanServerSideRequestResponseTimeMs: 15.68653846153846
+        meanServerSideTaskTimeMs: 1.453846153846154
+        meanClientSideRequestResponseTimeMs: 168.94807692307694
+    -
+        meanServerSideRequestResponseTimeMs: 29.77741935483871
+        meanServerSideTaskTimeMs: 1.4225806451612901
+        meanClientSideRequestResponseTimeMs: 183.0
+    -
+        meanServerSideRequestResponseTimeMs: 20.893055555555556
+        meanServerSideTaskTimeMs: 1.3986111111111115
+        meanClientSideRequestResponseTimeMs: 174.3458333333334
+    -
+        meanServerSideRequestResponseTimeMs: 57.28902439024391
+        meanServerSideTaskTimeMs: 1.4134146341463418
+        meanClientSideRequestResponseTimeMs: 210.5353658536585
+    -
+        meanServerSideRequestResponseTimeMs: 92.12065217391304
+        meanServerSideTaskTimeMs: 1.4282608695652175
+        meanClientSideRequestResponseTimeMs: 245.25108695652173
+    -
+        meanServerSideRequestResponseTimeMs: 23.387254901960784
+        meanServerSideTaskTimeMs: 1.5245098039215683
+        meanClientSideRequestResponseTimeMs: 176.4705882352941

@@ -1,0 +1,50 @@
+Architecture kind: "Synchronous blocking"
+Number of clients: 5
+Number of requests per client: 20
+Number of elements in array: 1000
+Delay between requests ms: [1, 2002, 200]
+result:
+    -
+        meanServerSideRequestResponseTimeMs: 2.8699999999999997
+        meanServerSideTaskTimeMs: 2.4000000000000004
+        meanClientSideRequestResponseTimeMs: 11.99
+    -
+        meanServerSideRequestResponseTimeMs: 1.42
+        meanServerSideTaskTimeMs: 1.29
+        meanClientSideRequestResponseTimeMs: 205.04000000000002
+    -
+        meanServerSideRequestResponseTimeMs: 2.1
+        meanServerSideTaskTimeMs: 1.7599999999999998
+        meanClientSideRequestResponseTimeMs: 406.09000000000003
+    -
+        meanServerSideRequestResponseTimeMs: 2.13
+        meanServerSideTaskTimeMs: 1.7
+        meanClientSideRequestResponseTimeMs: 606.32
+    -
+        meanServerSideRequestResponseTimeMs: 3.2600000000000002
+        meanServerSideTaskTimeMs: 1.8700000000000003
+        meanClientSideRequestResponseTimeMs: 807.35
+    -
+        meanServerSideRequestResponseTimeMs: 3.9599999999999995
+        meanServerSideTaskTimeMs: 1.85
+        meanClientSideRequestResponseTimeMs: 1007.45
+    -
+        meanServerSideRequestResponseTimeMs: 5.9
+        meanServerSideTaskTimeMs: 1.78
+        meanClientSideRequestResponseTimeMs: 1210.22
+    -
+        meanServerSideRequestResponseTimeMs: 7.75
+        meanServerSideTaskTimeMs: 1.72
+        meanClientSideRequestResponseTimeMs: 1411.8399999999997
+    -
+        meanServerSideRequestResponseTimeMs: 7.75
+        meanServerSideTaskTimeMs: 1.8599999999999999
+        meanClientSideRequestResponseTimeMs: 1611.3799999999999
+    -
+        meanServerSideRequestResponseTimeMs: 6.93
+        meanServerSideTaskTimeMs: 1.92
+        meanClientSideRequestResponseTimeMs: 1810.6200000000001
+    -
+        meanServerSideRequestResponseTimeMs: 13.63
+        meanServerSideTaskTimeMs: 1.8900000000000001
+        meanClientSideRequestResponseTimeMs: 2017.73

@@ -1,0 +1,50 @@
+Architecture kind: "Asynchronous"
+Number of clients: 5
+Number of requests per client: 20
+Number of elements in array: [100, 5101, 500]
+Delay between requests ms: 150
+result:
+    -
+        meanServerSideRequestResponseTimeMs: 149.6
+        meanServerSideTaskTimeMs: 0.27
+        meanClientSideRequestResponseTimeMs: 157.34
+    -
+        meanServerSideRequestResponseTimeMs: 148.70999999999998
+        meanServerSideTaskTimeMs: 0.61
+        meanClientSideRequestResponseTimeMs: 155.41
+    -
+        meanServerSideRequestResponseTimeMs: 148.82000000000002
+        meanServerSideTaskTimeMs: 1.61
+        meanClientSideRequestResponseTimeMs: 154.77
+    -
+        meanServerSideRequestResponseTimeMs: 153.26000000000002
+        meanServerSideTaskTimeMs: 3.6199999999999997
+        meanClientSideRequestResponseTimeMs: 157.2
+    -
+        meanServerSideRequestResponseTimeMs: 157.79000000000002
+        meanServerSideTaskTimeMs: 5.68
+        meanClientSideRequestResponseTimeMs: 159.75
+    -
+        meanServerSideRequestResponseTimeMs: 149.35999999999999
+        meanServerSideTaskTimeMs: 7.826666666666666
+        meanClientSideRequestResponseTimeMs: 162.75
+    -
+        meanServerSideRequestResponseTimeMs: 164.92818181818183
+        meanServerSideTaskTimeMs: 10.690000000000001
+        meanClientSideRequestResponseTimeMs: 165.25
+    -
+        meanServerSideRequestResponseTimeMs: 173.04242914979758
+        meanServerSideTaskTimeMs: 14.18668016194332
+        meanClientSideRequestResponseTimeMs: 168.95
+    -
+        meanServerSideRequestResponseTimeMs: 168.77190476190475
+        meanServerSideTaskTimeMs: 17.916190476190476
+        meanClientSideRequestResponseTimeMs: 172.45
+    -
+        meanServerSideRequestResponseTimeMs: 158.76428571428568
+        meanServerSideTaskTimeMs: 21.755238095238095
+        meanClientSideRequestResponseTimeMs: NaN
+    -
+        meanServerSideRequestResponseTimeMs: 139.48
+        meanServerSideTaskTimeMs: 22.98
+        meanClientSideRequestResponseTimeMs: NaN
