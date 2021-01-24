@@ -18,18 +18,22 @@ import SwingDSL.textField
 import ru.itmo.java.architectures.experiment.Experiment
 import ru.itmo.java.architectures.experiment.ExperimentConfig
 import ru.itmo.java.architectures.experiment.ExperimentResult
+import ru.itmo.java.architectures.experiment.FileUtils.asYaml
 import ru.itmo.java.architectures.experiment.ServerArchitectureType
 import ru.itmo.java.architectures.experiment.schedulers.ConstantScheduler
 import ru.itmo.java.architectures.experiment.schedulers.LinearScheduler
 import java.awt.Color
 import java.awt.Container
 import java.awt.GridLayout
+import java.nio.file.Files
 import java.util.concurrent.Executors
 import javax.swing.*
 
 
 fun main() {
-    Application().launch()
+    val app = Application()
+    app.launch()
+    Runtime.getRuntime().addShutdownHook(Thread(app::close))
 }
 
 
@@ -109,7 +113,7 @@ class Application {
 
                         val results = Experiment(config).run()
                         SwingUtilities.invokeLater { showResults(results, parameter) }
-                        saveResults(results)
+                        saveResults(results, parameter)
                     }
                 }
             }
@@ -228,8 +232,13 @@ class Application {
         displayPanel.revalidate()
     }
 
-    private fun saveResults(results: ExperimentResult) {
-
+    private fun saveResults(results: ExperimentResult, parameter: ParametersOfInterest) {
+        val architectureType = results.config.architectureType
+        val resultFile = Files.createTempFile("${architectureType}_$parameter", ".yml")
+        resultFile.toFile()
+            .outputStream()
+            .writer(Charsets.UTF_8)
+            .write(results.asYaml())
     }
 
     fun close() {
