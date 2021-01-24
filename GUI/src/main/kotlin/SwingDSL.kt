@@ -1,5 +1,6 @@
 import java.awt.Component
 import java.awt.Container
+import java.awt.Dimension
 import java.awt.event.ActionListener
 import javax.swing.*
 
@@ -11,9 +12,9 @@ object SwingDSL {
             add(it)
         }
 
-    fun Container.button(title: String = "", buttonInitializer: JButton.() -> Unit): JButton =
+    fun Container.button(title: String = "", actionListener: ActionListener): JButton =
         JButton(title).also{
-            it.buttonInitializer()
+            it.addActionListener(actionListener)
             add(it)
         }
 
@@ -23,7 +24,7 @@ object SwingDSL {
             add(it)
         }
 
-    fun Container.box(layout: Int, doCenter: Boolean = true, initializer: Container.() -> Unit) =
+    fun Container.box(layout: Int, doCenter: Boolean = true, initializer: Box.() -> Unit = {}) =
         Box(layout).apply {
             initializer()
             if (!doCenter) {
@@ -39,19 +40,38 @@ object SwingDSL {
             }
         }.also { add(it) }
 
-    fun Container.row(doCenter: Boolean = true, initializer: Container.() -> Unit) =
+    fun Container.row(doCenter: Boolean = true, initializer: Box.() -> Unit = {}) =
         box(BoxLayout.X_AXIS, doCenter) { initializer() }
 
-    fun Container.column(doCenter: Boolean = true, initializer: Container.() -> Unit) =
+    fun Container.column(doCenter: Boolean = true, initializer: Box.() -> Unit = {}) =
         box(BoxLayout.Y_AXIS, doCenter) { initializer() }
 
-    fun <T> Container.comboBox(options: Array<T>, initializer: JComboBox<T>.() -> Unit): JComboBox<T> =
+    fun <T> Container.comboBox(options: Array<T>, initializer: JComboBox<T>.() -> Unit = {}): JComboBox<T> =
         JComboBox(options).also {
             it.initializer()
             add(it)
         }
 
-    infix fun <T> JComboBox<T>.onAction(listener: ActionListener) {
+    fun Container.textField(width: Int = 5, initializer: JTextField.() -> Unit = {}) =
+        JTextField(width).also {
+            it.initializer()
+            add(it)
+        }
+
+    fun Container.intField() {
 
     }
+
+    fun Container.longField() {
+
+    }
+
+    infix fun ActionListener.addAction(action: () -> Unit) {
+
+    }
+
+    fun Container.verticalGlue(): Component = Box.createVerticalGlue().also { add(it) }
+
+    fun Container.rigidArea(width: Int, height: Int): Component =
+        Box.createRigidArea(Dimension(width, height)).also { add(it) }
 }
