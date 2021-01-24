@@ -10,7 +10,7 @@ object FileUtils {
     fun <T> Scheduler<T>.describe(): String =
             when (this) {
                 is ConstantScheduler -> constant.toString()
-                is LinearScheduler -> "\"from $start to $exclusiveEnd (exclusively) with a step of $step\""
+                is LinearScheduler -> "[$start, $exclusiveEnd, $step]"
                 else -> toString()
             }
 
@@ -29,10 +29,10 @@ object FileUtils {
             "meanServerSideTaskTimeMs: $meanServerSideTaskTimeMs",
             "meanClientSideRequestResponseTimeMs: $meanClientSideRequestResponseTimeMs"
     ).mapIndexed { i, seq ->
-        val desiredLength = seq.length + if (i == 0) offset else offset + FileUtils.YAML_SINGLE_OFFSET
+        val desiredLength = seq.length + if (i == 0) offset else offset + YAML_SINGLE_OFFSET
         seq.padStart(desiredLength)
     }.joinToString("\n")
 
     fun ExperimentResult.asYaml(): String = stepResults
-            .joinToString("\n", "${config.asYaml()}\nresult:\n") { it.asYamlEntry(FileUtils.YAML_SINGLE_OFFSET) }
+            .joinToString("\n", "${config.asYaml()}\nresult:\n") { it.asYamlEntry(YAML_SINGLE_OFFSET) }
 }
