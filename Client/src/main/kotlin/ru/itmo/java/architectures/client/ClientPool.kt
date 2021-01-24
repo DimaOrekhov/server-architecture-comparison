@@ -24,7 +24,7 @@ class ClientPool(
     companion object {
         const val CLIENT_POOL_SIZE = 4
         const val AWAIT_STEP_MS = 1_000L
-        const val MAX_AWAIT_TIME_MS = 30_000L
+        const val MAX_AWAIT_TIME_MS = 180_000L
     }
 
     private val clientsThreadPool = Executors.newFixedThreadPool(CLIENT_POOL_SIZE)
