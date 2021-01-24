@@ -22,6 +22,6 @@ object GUIConstants {
 
     const val DEFAULT_N_REQUESTS = "20"
     const val DEFAULT_N_ELEMENTS = "1000"
-    const val DEFAULT_N_CLIENTS = "10"
+    const val DEFAULT_N_CLIENTS = "5"
     const val DEFAULT_DELAY_MS = "150"
 }
