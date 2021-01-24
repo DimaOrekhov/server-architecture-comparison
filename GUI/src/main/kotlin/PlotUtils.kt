@@ -2,25 +2,29 @@ import org.jfree.chart.ChartFactory
 import org.jfree.chart.ChartPanel
 import org.jfree.chart.JFreeChart
 import org.jfree.chart.plot.PlotOrientation
-import org.jfree.data.category.DefaultCategoryDataset
+import org.jfree.data.xy.XYSeries
+import org.jfree.data.xy.XYSeriesCollection
 
 object PlotUtils {
 
-    fun <T: Comparable<T>> plot(xValues: Iterable<Number>,
-             yValues: Iterable<T>,
+    fun plot(xValues: Iterable<Double>,
+             yValues: Iterable<Double>,
              title: String,
              xLabel: String,
              yLabel: String,
              label: String): JFreeChart {
-        val dataset = DefaultCategoryDataset().apply {
-            (xValues zip yValues).forEach { (x, y) -> addValue(x, label, y) }
+        val dataset = XYSeriesCollection()
+        val series = XYSeries(label).apply {
+            (xValues zip yValues).forEach { (x, y) -> add(x, y) }
         }
-        val plot = ChartFactory.createLineChart(title, xLabel, yLabel, dataset, PlotOrientation.VERTICAL,
+        dataset.addSeries(series)
+
+        val plot = ChartFactory.createXYLineChart(title, xLabel, yLabel, dataset, PlotOrientation.VERTICAL,
             true,true,false)
 
         plot.title.font = GUIConstants.PLOT_FONT
-        plot.categoryPlot.domainAxis.labelFont = GUIConstants.AXIS_FONT
-        plot.categoryPlot.rangeAxis.labelFont = GUIConstants.AXIS_FONT
+        plot.xyPlot.domainAxis.labelFont = GUIConstants.AXIS_FONT
+        plot.xyPlot.rangeAxis.labelFont = GUIConstants.AXIS_FONT
 
         return plot
     }

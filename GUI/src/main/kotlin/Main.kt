@@ -26,6 +26,7 @@ import java.awt.Color
 import java.awt.Container
 import java.awt.GridLayout
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 import javax.swing.*
 
@@ -207,23 +208,23 @@ class Application {
 
         val xRange = results.config.run {
             when (parametersOfInterest) {
-                ParametersOfInterest.N -> nElementsScheduler.toList()
-                ParametersOfInterest.M -> nClientsScheduler.toList()
-                ParametersOfInterest.Delta -> requestDelayMsScheduler.map { it.toInt() }
-            }
+                ParametersOfInterest.N -> nElementsScheduler
+                ParametersOfInterest.M -> nClientsScheduler
+                ParametersOfInterest.Delta -> requestDelayMsScheduler
+            }.map { it.toDouble() }
         }
         val architectureName = results.config.architectureType.showName
 
         val yClientSide = results.stepResults.map { it.meanClientSideRequestResponseTimeMs }
-        val clientSide = plot(yClientSide, xRange, "Mean client-side time",
+        val clientSide = plot(xRange, yClientSide, "Mean client-side time",
             parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
 
         val yServerSide = results.stepResults.map { it.meanServerSideRequestResponseTimeMs }
-        val serverSide = plot(yServerSide, xRange, "Mean server-side total time",
+        val serverSide = plot(xRange, yServerSide, "Mean server-side total time",
             parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
 
         val yTaskTime = results.stepResults.map { it.meanServerSideTaskTimeMs }
-        val serverSideTask = plot(yTaskTime, xRange, "Mean server-side task time",
+        val serverSideTask = plot(xRange, yTaskTime,"Mean server-side task time",
             parametersOfInterest.name, GUIConstants.PLOT_Y_LABEL, architectureName)
 
         displayPanel.add(serverSideTask.asPanel(PLOT_WIDTH, PLOT_HEIGHT))
@@ -233,12 +234,16 @@ class Application {
     }
 
     private fun saveResults(results: ExperimentResult, parameter: ParametersOfInterest) {
+        val globalResultDir = Files.createDirectories(Paths.get(GUIConstants.RESULTS_DIRECTORY))
+        val parameterResultDir = Files.createDirectories(Paths.get(globalResultDir.toString(), parameter.dirName))
+
         val architectureType = results.config.architectureType
-        val resultFile = Files.createTempFile("${architectureType}_$parameter", ".yml")
-        resultFile.toFile()
-            .outputStream()
-            .writer(Charsets.UTF_8)
-            .write(results.asYaml())
+        val resultFile = Files.createTempFile(parameterResultDir, "$architectureType", ".yml")
+        resultFile.toFile().writeText(results.asYaml())
+
+        SwingUtilities.invokeLater {
+            JOptionPane.showMessageDialog(controlPanel, "Results are saved to $resultFile")
+        }
     }
 
     fun close() {

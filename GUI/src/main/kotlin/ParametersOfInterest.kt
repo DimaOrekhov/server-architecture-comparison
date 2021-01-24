@@ -1,3 +1,3 @@
-enum class ParametersOfInterest(val showName: String) {
-    N("nElements"), M("nClients"), Delta("delta")
+enum class ParametersOfInterest(val dirName: String) {
+    N("n_elements"), M("n_clients"), Delta("delta")
 }
