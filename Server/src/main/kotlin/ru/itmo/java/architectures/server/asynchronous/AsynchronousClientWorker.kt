@@ -45,7 +45,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         }
 
         override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
-            TODO("Not yet implemented")
+            channel.close()
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
@@ -74,7 +74,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         }
 
         override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
-            TODO("Not yet implemented")
+            channel.close()
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
@@ -93,7 +93,7 @@ class AsynchronousClientWorker(private val channel: AsynchronousSocketChannel,
         }
 
         override fun failed(exc: Throwable?, attachment: AsynchronousClientAttachment?) {
-            TODO("Not yet implemented")
+            channel.close()
         }
     }.terminateOn { r, a -> channelClosedPredicate(r, a)}
 
