@@ -166,7 +166,7 @@ class Application {
         val nRequestsScheduler = ConstantScheduler(nRequestsField.getInt() ?: return null)
 
         val fromValue = schedulerFields.from.getInt() ?: return null
-        val toValue = schedulerFields.to.getInt()?.apply { this + 1 } ?: return null
+        val toValue = schedulerFields.to.getInt()?.run { this + 1 } ?: return null
         val stepValue = schedulerFields.step.getInt() ?: return null
 
         val nClientsConstantScheduler =
